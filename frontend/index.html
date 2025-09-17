@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCP JIRA Admin - Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .stat-card h3 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .actions-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .actions-section h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .action-item {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid #3498db;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+
+        .action-item.success {
+            border-left-color: #27ae60;
+        }
+
+        .action-item.error {
+            border-left-color: #e74c3c;
+        }
+
+        .action-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .action-type {
+            background: #3498db;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        .action-type.success {
+            background: #27ae60;
+        }
+
+        .action-type.error {
+            background: #e74c3c;
+        }
+
+        .timestamp {
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+
+        .action-details {
+            color: #2c3e50;
+            line-height: 1.6;
+        }
+
+        .refresh-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+
+        .refresh-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .no-actions {
+            text-align: center;
+            color: #7f8c8d;
+            font-style: italic;
+            padding: 40px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .loading {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 MCP JIRA Admin</h1>
+            <p>Dashboard de Monitoramento de Ações</p>
+        </div>
+        
+        <div class="content">
+            <div class="stats">
+                <div class="stat-card">
+                    <h3 id="totalActions">0</h3>
+                    <p>Total de Ações</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="successActions">0</h3>
+                    <p>Ações Bem-sucedidas</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="lastUpdate">--</h3>
+                    <p>Última Atualização</p>
+                </div>
+            </div>
+
+            <div class="actions-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2>📋 Histórico de Ações</h2>
+                    <button class="refresh-btn" onclick="loadActions()">🔄 Atualizar</button>
+                </div>
+                
+                <div id="actionsContainer">
+                    <div class="loading">
+                        Carregando ações...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function loadActions() {
+            const container = document.getElementById('actionsContainer');
+            container.innerHTML = '<div class="loading">Carregando ações...</div>';
+
+            try {
+                // Simular carregamento do arquivo JSON
+                // Em um ambiente real, isso seria uma chamada para uma API
+                const response = await fetch('./test_actions.json');
+                
+                if (!response.ok) {
+                    throw new Error('Arquivo de ações não encontrado');
+                }
+                
+                const actions = await response.json();
+                
+                if (actions.length === 0) {
+                    container.innerHTML = '<div class="no-actions">Nenhuma ação registrada ainda. Execute algumas ferramentas do MCP para ver os resultados aqui!</div>';
+                    updateStats(0, 0);
+                    return;
+                }
+
+                // Ordenar por timestamp (mais recente primeiro)
+                actions.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+                // Renderizar ações
+                container.innerHTML = actions.map(action => `
+                    <div class="action-item ${action.success ? 'success' : 'error'}">
+                        <div class="action-header">
+                            <span class="action-type ${action.success ? 'success' : 'error'}">
+                                ${action.action.toUpperCase()}
+                            </span>
+                            <span class="timestamp">
+                                ${new Date(action.timestamp).toLocaleString('pt-BR')}
+                            </span>
+                        </div>
+                        <div class="action-details">
+                            ${renderActionDetails(action)}
+                        </div>
+                    </div>
+                `).join('');
+
+                // Atualizar estatísticas
+                const successCount = actions.filter(a => a.success).length;
+                updateStats(actions.length, successCount);
+                
+            } catch (error) {
+                container.innerHTML = `
+                    <div class="no-actions">
+                        ❌ Erro ao carregar ações: ${error.message}<br><br>
+                        <strong>Para testar:</strong><br>
+                        1. Execute o servidor MCP<br>
+                        2. Use a ferramenta "create_test_issue"<br>
+                        3. Atualize esta página
+                    </div>
+                `;
+                updateStats(0, 0);
+            }
+        }
+
+        function renderActionDetails(action) {
+            if (action.action === 'create_issue' && action.data) {
+                return `
+                    <strong>Issue Criado:</strong> ${action.data.key}<br>
+                    <strong>Título:</strong> ${action.data.summary}<br>
+                    <strong>Status:</strong> ${action.data.status}<br>
+                    <strong>Prioridade:</strong> ${action.data.priority}
+                `;
+            }
+            return `<strong>Ação:</strong> ${action.action}`;
+        }
+
+        function updateStats(total, success) {
+            document.getElementById('totalActions').textContent = total;
+            document.getElementById('successActions').textContent = success;
+            document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString('pt-BR');
+        }
+
+        // Carregar ações ao inicializar
+        loadActions();
+
+        // Auto-refresh a cada 30 segundos
+        setInterval(loadActions, 30000);
+    </script>
+</body>
+</html>

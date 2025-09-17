@@ -1,0 +1,102 @@
+{
+  "mcp": {
+    "servers": {
+      "atlassian-official": {
+        "name": "Atlassian MCP Oficial",
+        "description": "Servidor MCP oficial da Atlassian para operações básicas",
+        "command": "npx",
+        "args": ["-y", "mcp-remote", "https://mcp.atlassian.com/v1/sse"],
+        "capabilities": [
+          "search_issues",
+          "create_issue", 
+          "update_issue",
+          "create_page",
+          "search_pages"
+        ],
+        "auth_type": "oauth",
+        "setup_instructions": [
+          "Execute: npx -y mcp-remote https://mcp.atlassian.com/v1/sse",
+          "Complete o login OAuth no browser",
+          "Adicione esta configuração ao seu cliente MCP"
+        ]
+      },
+      "jira-admin-local": {
+        "name": "JIRA Admin MCP Local",
+        "description": "Servidor MCP personalizado para operações administrativas",
+        "command": "docker",
+        "args": [
+          "run", "--rm", "-i",
+          "-p", "6000:6000",
+          "-e", "ORG_ID=${ORG_ID}",
+          "-e", "ADMIN_API_KEY=${ADMIN_API_KEY}",
+          "-e", "JIRA_URL=${JIRA_URL}",
+          "-e", "JIRA_USERNAME=${JIRA_USERNAME}",
+          "-e", "JIRA_API_TOKEN=${JIRA_API_TOKEN}",
+          "mcp-jira-admin:latest"
+        ],
+        "capabilities": [
+          "create_user",
+          "add_user_to_group",
+          "assign_project_role",
+          "grant_permission",
+          "list_project_roles",
+          "list_permission_schemes"
+        ],
+        "auth_type": "api_token",
+        "port": 6000,
+        "health_check": "http://localhost:6000/health",
+        "setup_instructions": [
+          "Configure variáveis de ambiente no arquivo .env",
+          "Execute: docker-compose up -d",
+          "Verifique se o serviço está rodando na porta 6000"
+        ]
+      }
+    },
+    "environment": {
+      "required_variables": [
+        "JIRA_URL",
+        "JIRA_USERNAME", 
+        "JIRA_API_TOKEN",
+        "ORG_ID",
+        "ADMIN_API_KEY"
+      ],
+      "optional_variables": [
+        "SCIM_API_KEY",
+        "DIRECTORY_ID",
+        "LOG_LEVEL"
+      ]
+    },
+    "examples": {
+      "basic_operations": [
+        "Buscar issues: 'Encontre todas as issues do projeto PROJ com status Aberto'",
+        "Criar issue: 'Crie uma issue \"Implementar SSO\" no projeto PROJ e atribua ao @fulano'"
+      ],
+      "admin_operations": [
+        "Criar usuário: 'Crie o usuário maria@empresa.com sem produto por enquanto'",
+        "Adicionar a grupo: 'Adicione maria@empresa.com aos grupos jira-software-users e finance'",
+        "Atribuir papel: 'Coloque maria@empresa.com no papel Developers do projeto FIN'",
+        "Conceder permissão: 'No permission scheme 12345, conceda BROWSE_PROJECTS ao grupo auditors'"
+      ]
+    },
+    "security": {
+      "best_practices": [
+        "Use secret manager ou variáveis de ambiente para credenciais",
+        "Configure tokens com expiração apropriada",
+        "Revogue chaves não utilizadas",
+        "Aplique princípio do menor privilégio",
+        "Monitore logs de acesso"
+      ],
+      "required_permissions": {
+        "jira_api_token": [
+          "Administer Jira (global) - para operações de usuário e permissões",
+          "Browse Projects - para listar projetos",
+          "Administer Projects - para gerenciar papéis de projeto"
+        ],
+        "admin_api_key": [
+          "Organization Admin - para gerenciar usuários e grupos",
+          "User Management - para operações de provisionamento"
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "mcpServers": {
+    "atlassian": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://mcp.atlassian.com/v1/sse"]
+    },
+    "jira-admin": {
+      "command": "docker",
+      "args": [
+        "run", "--rm", "-i",
+        "-p", "6000:6000",
+        "-e", "ORG_ID=${ORG_ID}",
+        "-e", "ADMIN_API_KEY=${ADMIN_API_KEY}",
+        "-e", "JIRA_URL=${JIRA_URL}",
+        "-e", "JIRA_USERNAME=${JIRA_USERNAME}",
+        "-e", "JIRA_API_TOKEN=${JIRA_API_TOKEN}",
+        "mcp-jira-admin:latest"
+      ]
+    }
+  }
+}
